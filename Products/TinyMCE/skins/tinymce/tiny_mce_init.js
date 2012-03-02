@@ -51,7 +51,7 @@ function TinyMCEConfig(id) {
             atd_rpc_id : this.widget_config.atd_rpc_id,
             atd_rpc_url : this.widget_config.atd_rpc_url,
             atd_show_types : this.widget_config.atd_show_types,
-            atd_ignore_strings : this.widget_config.atd_ignore_strings, 
+            atd_ignore_strings : this.widget_config.atd_ignore_strings,
 
             labels : this.widget_config.labels,
             theme_advanced_styles : this.getStyles(),
@@ -87,7 +87,10 @@ function TinyMCEConfig(id) {
             allow_captioned_images : this.getAllowCaptionedImages(),
             rooted : this.getRooted(),
             force_span_wrappers : true,
-            fix_list_elements : false
+            fix_list_elements : false,
+            // allow embed tag if user removes it from
+            // list of nasty tags - see #10681
+            media_strict: false
         };
 
         window.tinyMCE.init(init_dict);
@@ -363,6 +366,8 @@ if (typeof(kukit) != "undefined") {
     });
 
     kukit.actionsGlobalRegistry.register("save-tinymce", function(oper) {
-        tinymce.EditorManager.activeEditor.save();
+    	if(tinymce.EditorManager != undefined && tinymce.EditorManager.activeEditor != null){
+    		tinymce.EditorManager.activeEditor.save();
+    	}
     });
 }

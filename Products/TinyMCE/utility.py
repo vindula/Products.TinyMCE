@@ -20,7 +20,6 @@ from Products.Archetypes.interfaces import IBaseObject
 from Products.Archetypes.interfaces.field import IImageField
 from Products.CMFCore.interfaces._content import IFolderish
 from Products.CMFCore.utils import getToolByName
-from Products.CMFCore.interfaces import ISiteRoot
 try:
     from plone.app.layout.globals.portal import RIGHT_TO_LEFT
 except ImportError:
@@ -580,12 +579,20 @@ class TinyMCE(SimpleItem):
     def getContentType(self, object=None, fieldname=None):
         context = aq_base(object)
         if IBaseObject.providedBy(context):
+            # support Archetypes fields
             if fieldname is None:
                 field = context.getPrimaryField()
             else:
                 field = context.getField(fieldname) or getattr(context, fieldname, None)
             if field and hasattr(aq_base(field), 'getContentType'):
                 return field.getContentType(context)
+        elif '.widgets.' in fieldname:
+            # support plone.app.textfield RichTextValues
+            fieldname = fieldname.split('.widgets.')[-1]
+            field = getattr(context, fieldname, None)
+            mimetype = getattr(field, 'mimeType', None)
+            if mimetype is not None:
+                return mimetype
         return 'text/html'
 
     security.declareProtected('View', 'getConfiguration')
@@ -742,10 +749,18 @@ class TinyMCE(SimpleItem):
         else:
             results['contextmenu'] = False
 
+        portal = getToolByName(self, 'portal_url').getPortalObject()
+        results['portal_url'] = aq_inner(portal).absolute_url()
+        nav_root = getNavigationRootObject(context, portal)
+        results['navigation_root_url'] = nav_root.absolute_url()
+
         if self.content_css and self.content_css.strip() != "":
             results['content_css'] = self.content_css
         else:
-            results['content_css'] = self.absolute_url() + """/@@tinymce-getstyle"""
+            results['content_css'] = '/'.join([
+                results['portal_url'],
+                self.getId(),
+                "@@tinymce-getstyle"])
 
         if self.link_using_uids:
             results['link_using_uids'] = True
@@ -768,11 +783,6 @@ class TinyMCE(SimpleItem):
 
         results['entity_encoding'] = self.entity_encoding
 
-        portal = getUtility(ISiteRoot)
-        results['portal_url'] = aq_inner(portal).absolute_url()
-        nav_root = getNavigationRootObject(context, portal)
-        results['navigation_root_url'] = nav_root.absolute_url()
-
         props = getToolByName(self, 'portal_properties')
         livesearch = props.site_properties.getProperty('enable_livesearch', False)
         if livesearch:
@@ -794,16 +804,15 @@ class TinyMCE(SimpleItem):
 
         try:
             results['document_url'] = context.absolute_url()
-            if getattr(aq_base(context), 'checkCreationFlag', None):
-                parent = aq_parent(aq_inner(context))
-                if context.checkCreationFlag():
-                    parent = aq_parent(aq_parent(parent))
-                    results['parent'] = parent.absolute_url() + "/"
+            parent = aq_parent(aq_inner(context))
+            if getattr(aq_base(context), 'checkCreationFlag', None) and context.checkCreationFlag():
+                parent = aq_parent(aq_parent(parent))
+                results['parent'] = parent.absolute_url() + "/"
+            else:
+                if IFolderish.providedBy(context):
+                    results['parent'] = context.absolute_url() + "/"
                 else:
-                    if IFolderish.providedBy(context):
-                        results['parent'] = context.absolute_url() + "/"
-                    else:
-                        results['parent'] = parent.absolute_url() + "/"
+                    results['parent'] = parent.absolute_url() + "/"
         except AttributeError:
             results['parent'] = results['portal_url'] + "/"
             results['document_url'] = results['portal_url']

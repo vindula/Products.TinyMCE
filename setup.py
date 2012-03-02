@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-version = '1.2.7'
+version = '1.2.10'
 
 if sys.version_info[0] == 2 and sys.version_info[1] < 6:
     requires = ['simplejson']
@@ -19,7 +19,6 @@ setup(name='Products.TinyMCE',
       classifiers=[
         "Framework :: Plone",
         "Programming Language :: Python",
-        "Topic :: Software Development :: Libraries :: Python Modules",
         ],
       keywords='editor editors tinymce wysiwyg',
       author='Four Digits',

@@ -12,6 +12,7 @@ except ImportError:
     else:
         HAS_PLONE30 = True
 
+
 # BBB for Z2 vs Z3 interfaces checks
 def implementedOrProvidedBy(anInterface, anObject):
     if HAS_PLONE40:

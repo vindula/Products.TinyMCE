@@ -6890,7 +6890,10 @@ window.tinymce.dom.Sizzle = Sizzle;
 					tinymce.util.XHR.send({
 						url : tinymce._addVer(u),
 						async : false,
-						success : function(co){window.execScript(co);done();}
+						success : function(co) {
+							window.execScript(co);
+							done();
+						}
 					});
 				} else {
 					e = tinymce.DOM.create('script', {id : id, type : 'text/javascript', src : tinymce._addVer(u)});

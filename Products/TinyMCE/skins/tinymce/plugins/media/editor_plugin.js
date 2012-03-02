@@ -2,12 +2,11 @@
  * $Id: editor_plugin_src.js 1222 2009-09-03 17:26:47Z spocke $
  *
  * @author Moxiecode
- * @copyright Copyright ï¿½ 2004-2008, Moxiecode Systems AB, All rights reserved.
+ * @copyright Copyright © 2004-2008, Moxiecode Systems AB, All rights reserved.
  */
 
 (function() {
 	var each = tinymce.each;
-	
 
 	tinymce.create('tinymce.plugins.MediaPlugin', {
 		init : function(ed, url) {
@@ -149,9 +148,8 @@
 								cb = 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0';
 								mt = 'audio/x-pn-realaudio-plugin';
 								break;
-								
 						}
-						
+
 						if (ci) {
 							dom.replace(t._buildObj({
 								classid : ci,
@@ -205,7 +203,7 @@
 		_objectsToSpans : function(ed, o) {
 			var t = this, h = o.content;
 
-			h = h.replace(/<script[^>]*>\s*write(Flash|ShockWave|WindowsMedia|QuickTime|RealMedia|Rtmp)\(\{([^\)]*)\}\);\s*<\/script>/gi, function(a, b, c) {
+			h = h.replace(/<script[^>]*>\s*write(Flash|ShockWave|WindowsMedia|QuickTime|RealMedia)\(\{([^\)]*)\}\);\s*<\/script>/gi, function(a, b, c) {
 				var o = t._parse(c);
 
 				return '<img class="mceItem' + b + '" title="' + ed.dom.encode(c) + '" src="' + t.url + '/img/trans.gif" width="' + o.width + '" height="' + o.height + '" />'
@@ -225,89 +223,45 @@
 		_buildObj : function(o, n) {
 			var ob, ed = this.editor, dom = ed.dom, p = this._parse(n.title), stc;
 			
-			stc = ed.getParam('media_strict', true) && o.type == 'application/x-shockwave-flash' ;
-			var alert = tinyMCE.activeEditor.windowManager;
+			stc = ed.getParam('media_strict', true) && o.type == 'application/x-shockwave-flash';
 
 			p.width = o.width = dom.getAttrib(n, 'width') || 100;
 			p.height = o.height = dom.getAttrib(n, 'height') || 100;
 
 			if (p.src)
 				p.src = ed.convertURL(p.src, 'src', n);
-			
-			var url = p.src
 
-			if (url.search(/rtmp:\/\//) != -1) {
-				var cont = url.lastIndexOf("/"); 
-				var video = url.slice(cont+1);
+			if (stc) {
 				ob = dom.create('span', {
-					id: video,
-					mce_name: 'object',
-					type: 'application/x-shockwave-flash',
-					data: '/player/player.swf',
-					style: dom.getAttrib(n, 'style'),
-					width: o.width,
-					height: o.height
+					id : p.id,
+					mce_name : 'object',
+					type : 'application/x-shockwave-flash',
+					data : p.src,
+					style : dom.getAttrib(n, 'style'),
+					width : o.width,
+					height : o.height
 				});
-			}
-			else {
-			
-				if (stc) {
-					ob = dom.create('span', {
-						id: p.id,
-						mce_name: 'object',
-						type: 'application/x-shockwave-flash',
-						data: p.src,
-						style: dom.getAttrib(n, 'style'),
-						width: o.width,
-						height: o.height
-					});
-				} else {
-						ob = dom.create('span', {
-							id: p.id,
-							mce_name: 'object',
-							classid: "clsid:" + o.classid,
-							style: dom.getAttrib(n, 'style'),
-							codebase: o.codebase,
-							width: o.width,
-							height: o.height
-						});
-					}
+			} else {
+				ob = dom.create('span', {
+					id : p.id,
+					mce_name : 'object',
+					classid : "clsid:" + o.classid,
+					style : dom.getAttrib(n, 'style'),
+					codebase : o.codebase,
+					width : o.width,
+					height : o.height
+				});
 			}
 
 			each (p, function(v, k) {
 				if (!/^(width|height|codebase|classid|id|_cx|_cy)$/.test(k)) {
-					var elemento = 0; 
 					// Use url instead of src in IE for Windows media
 					if (o.type == 'application/x-mplayer2' && k == 'src' && !p.url)
 						k = 'url';
 
-					if (v.search(/rtmp:\/\//) == -1) {
-						dom.add(ob, 'span', {
-							mce_name: 'param',
-							name: k,
-							'_mce_value': v
-						});
-					};
-					if ( k == 'src' || k == 'data' ){
-						if (v.search(/rtmp:\/\//) != -1){
-							alert.alert(k)
-							var conf = '';
-							var cont = v.lastIndexOf("/"); 
-							var video = v.slice(cont+1);
-							var url = v.slice(0,cont);
-							conf = "netstreambasepath='"+url+"'&amp;id='"+video+"'&amp;file='"+video+"'&amp;streamer='"+url+"'&amp;controlbar.position=bottom"
-		
-							dom.add(ob, 'span', {mce_name : 'param', name : 'allowscriptaccess', '_mce_value' : "always"});
-							dom.add(ob, 'span', {mce_name : 'param', name : 'allowfullscreen', '_mce_value' : "true"});
-							dom.add(ob, 'span', {mce_name : 'param', name : 'seamlesstabbing', '_mce_value' : "true"});
-							dom.add(ob, 'span', {mce_name : 'param', name : 'wmode', '_mce_value' : "opaque"});
-							
-							dom.add(ob, 'span', {mce_name : 'param', name : 'flashvars', '_mce_value' : conf});
-						};							
-						
-					};
-				};
-				
+					if (v)
+						dom.add(ob, 'span', {mce_name : 'param', name : k, '_mce_value' : v});
+				}
 			});
 
 			if (!stc)

@@ -69,18 +69,34 @@ function generatePreview(c){
 		oldHeight = nh;
 	
 	if (url != null){
-		h+='<div id="'+ video +'_wrapper" style="position: relative; width:'+nw+'px; height: '+nh+'px;">';
-		h+='<object height="100%" width="100%" type="application/x-shockwave-flash"' ;
-		h+='	data="player/player.swf" bgcolor="#000000" id="'+video+'"' ;
-		h+='	name="'+video+'" tabindex="0"><param name="allowfullscreen" value="true">';
-		h+='	<param name="allowscriptaccess" value="always">';
-		h+='	<param name="seamlesstabbing" value="true">';
-		h+='	<param name="wmode" value="opaque">';
-		h+='	<param name="flashvars" value="netstreambasepath='+url+'&amp;id='+video+'&amp;file='+video+'&amp;streamer='+url+'&amp;controlbar.position=bottom">';
-		h+='</object>';
-		h+='</div>';
+		if (url.match("rtmp://")){
+			
+			h+='<div id="'+ video +'_wrapper" style="position: relative; width:'+nw+'px; height: '+nh+'px;">';
+			h+='<object height="100%" width="100%" type="application/x-shockwave-flash"' ;
+			h+='	data="player/player.swf" bgcolor="#000000" id="'+video+'"' ;
+			h+='	name="'+video+'" tabindex="0"><param name="allowfullscreen" value="true">';
+			h+='	<param name="allowscriptaccess" value="always">';
+			h+='	<param name="seamlesstabbing" value="true">';
+			h+='	<param name="wmode" value="opaque">';
+			h+='	<param name="flashvars" value="netstreambasepath='+url+'&amp;id='+video+'&amp;file='+video+'&amp;streamer='+url+'&amp;controlbar.position=bottom">';
+			h+='</object>';
+			h+='</div>';
+		
+		}else{
+			
+			h+='<div id="'+ video +'_wrapper" style="position: relative; width:'+nw+'px; height: '+nh+'px;">';
+			h+='<object height="100%" width="100%" type="application/x-shockwave-flash"' ;
+			h+='	data="player/player.swf" bgcolor="#000000" id="'+video+'"' ;
+			h+='	name="'+video+'" tabindex="0"><param name="allowfullscreen" value="true">';
+			h+='	<param name="allowscriptaccess" value="always">';
+			h+='	<param name="seamlesstabbing" value="true">';
+			h+='	<param name="wmode" value="opaque">';
+			h+='	<param name="flashvars" value="netstreambasepath='+location+'&amp;id='+video+'&amp;file='+url+'/'+video+'&amp;controlbar.position=bottom">';
+			h+='</object>';
+			h+='</div>';
+		
+		};
 	};
-
 	p.innerHTML = "<!-- x --->" + h;
 	
 };
@@ -149,27 +165,36 @@ var VideoDialog = {
 		h += ' height="' + height + '"';
 		h += ' />';
 		
-		var s =' <script type="text/javascript">';
-			s+=' $f("'+id+'", "/player/flowplayer-3.2.7.swf", {';
-			s+='  clip: {';
-   			s+=' 		url: "'+video+'",';
-	  		s+='		provider: "influxis"';
-			s+=' 			},';
-			s+=' 			plugins: {';
-			s+='				influxis: {';
-			s+='					url: "/player/flowplayer.rtmp-3.2.3.swf",';
-			s+='					netConnectionUrl: "'+url+'"';
-			s+='				}';
-			s+='			}';
-			s+='		});';
-			s+='	</script>';
-	
+		if (url.match("rtmp://")) {
+			var s = ' <script type="text/javascript">';
+			s += ' $f("' + id + '", "/player/flowplayer-3.2.7.swf", {';
+			s += '  clip: {';
+			s += ' 		url: "' + video + '",';
+			s += '		provider: "influxis"';
+			s += ' 			},';
+			s += ' 			plugins: {';
+			s += '				influxis: {';
+			s += '					url: "/player/flowplayer.rtmp-3.2.3.swf",';
+			s += '					netConnectionUrl: "' + url + '"';
+			s += '				}';
+			s += '			}';
+			s += '		});';
+			s += '	</script>';
+		
+		}else{
+			var s = ' <script type="text/javascript">';
+				s +='	flowplayer("'+id+'", "/player/flowplayer-3.2.7.swf");';
+				s +=' </script>';
+		};
+		
+		
 		// Insert the contents from the input into the document
 		a = '';
-		a += "<a id='"+id+"' class='autoFlowPlayer player' style='display:block;width:'"+width+"';height:'"+height+"';cursor:pointer;'>"+h;
-		a += '</a>'
+		a += "<a id='"+id+"' class='autoFlowPlayer player' href='"+url+'/'+video+"' "; 
+		a += "	 style='display:block;width:'"+width+"';height:'"+height+"';cursor:pointer;'>"+h;
+		a += '</a>';
 		
-		html =""
+		html ="";
 		html +="<div style='display:block;width:'"+width+"';height:'"+height+"';cursor:pointer;'>"+a+s+"</div>";
 		
 		var ctx = tinyMCEPopup.editor.selection.getContent();

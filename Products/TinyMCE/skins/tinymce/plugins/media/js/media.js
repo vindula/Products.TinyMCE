@@ -131,6 +131,21 @@ function init() {
 				setStr(pl, 'wmp', 'volume');
 			break;
 
+			case "rmp":
+				setBool(pl, 'rmp', 'autostart');
+				setBool(pl, 'rmp', 'loop');
+				setBool(pl, 'rmp', 'autogotourl');
+				setBool(pl, 'rmp', 'center');
+				setBool(pl, 'rmp', 'imagestatus');
+				setBool(pl, 'rmp', 'maintainaspect');
+				setBool(pl, 'rmp', 'nojava');
+				setBool(pl, 'rmp', 'prefetch');
+				setBool(pl, 'rmp', 'shuffle');
+				setStr(pl, 'rmp', 'console');
+				setStr(pl, 'rmp', 'controls');
+				setStr(pl, 'rmp', 'numloop');
+				setStr(pl, 'rmp', 'scriptcallbacks');
+			break;
 		}
 
 		setStr(pl, null, 'src');
@@ -201,7 +216,6 @@ function insertMedia() {
 			case "rmp":
 				fe.className = "mceItemRealMedia";
 				break;
-			
 		}
 
 		if (fe.width != f.width.value || fe.height != f.height.value)
@@ -240,7 +254,6 @@ function insertMedia() {
 			case "rmp":
 				h += ' class="mceItemRealMedia"';
 				break;
-			
 		}
 
 		h += ' title="' + serializeParameters() + '"';
@@ -261,7 +274,7 @@ function updatePreview() {
 
 	f.width.value = f.width.value || '320';
 	f.height.value = f.height.value || '240';
-	
+
 	type = getType(f.src.value);
 	selectByValue(f, 'media_type', type);
 	changedType(type);
@@ -289,7 +302,7 @@ function getMediaListHTML() {
 function getType(v) {
 	var fo, i, c, el, x, f = document.forms[0];
 
-	fo = ed.getParam("media_types", "flash=swf;flv=flv;shockwave=dcr;qt=mov,qt,mpg,mp3,mp4,mpeg;shockwave=dcr;wmp=avi,wmv,wm,asf,asx,wmx,wvx;rmp=rm,ra,ram;rtmp=flv").split(';');
+	fo = ed.getParam("media_types", "flash=swf;flv=flv;shockwave=dcr;qt=mov,qt,mpg,mp3,mp4,mpeg;shockwave=dcr;wmp=avi,wmv,wm,asf,asx,wmx,wvx;rmp=rm,ra,ram").split(';');
 
 	// YouTube
 	if (v.match(/watch\?v=(.+)(.*)/)) {
@@ -346,7 +359,6 @@ function changedType(t) {
 	d.getElementById('shockwave_options').style.display = 'none';
 	d.getElementById('wmp_options').style.display = 'none';
 	d.getElementById('rmp_options').style.display = 'none';
-	//d.getElementById('rtmp_options').style.display = 'none';
 
 	if (t)
 		d.getElementById(t + '_options').style.display = 'block';
@@ -436,28 +448,11 @@ function serializeParameters() {
 			s += getStr('rmp', 'numloop');
 			s += getStr('rmp', 'scriptcallbacks');
 		break;
-		
-		case "rmtp":
-			s += getBool('rmtp', 'play', true);
-			s += getBool('rmtp', 'loop', true);
-			s += getBool('rmtp', 'menu', true);
-			s += getBool('rmtp', 'swliveconnect', false);
-			s += getStr('rmtp', 'quality');
-			s += getStr('rmtp', 'scale');
-			s += getStr('rmtp', 'salign');
-			s += getStr('rmtp', 'wmode');
-			s += getStr('rmtp', 'base');
-			s += getStr('rmtp', 'flashvars');
-			s += getStr('rmtp', 'src', '/player/flowplayer-3.2.7.swf');
-		break;
-		
 	}
 
 	s += getStr(null, 'id');
 	s += getStr(null, 'name');
-	if (f.media_type.options[f.media_type.selectedIndex].value != 'rtmp'){
-		s += getStr(null, 'src');
-	};
+	s += getStr(null, 'src');
 	s += getStr(null, 'align');
 	s += getStr(null, 'bgcolor');
 	s += getInt(null, 'vspace');
@@ -525,7 +520,7 @@ function jsEncode(s) {
 
 function generatePreview(c) {
 	var f = document.forms[0], p = document.getElementById('prev'), h = '', cls, pl, n, type, codebase, wp, hp, nw, nh;
-	
+
 	p.innerHTML = '<!-- x --->';
 
 	nw = parseInt(f.width.value);
@@ -584,12 +579,6 @@ function generatePreview(c) {
 			codebase = 'http://activex.microsoft.com/activex/controls/mplayer/en/nsmp2inf.cab#Version=5,1,52,701';
 			type = 'audio/x-pn-realaudio-plugin';
 			break;
-		
-		case "rtmp":
-			cls = 'clsid:D27CDB6E-AE6D-11cf-96B8-444553540000';
-			codebase = 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0';
-			type = 'application/x-shockwave-flash';
-			break;
 	}
 
 	if (pl == '') {
@@ -610,55 +599,18 @@ function generatePreview(c) {
 	pl.id = !pl.id ? 'obj' : pl.id;
 	pl.name = !pl.name ? 'eobj' : pl.name;
 	pl.align = !pl.align ? '' : pl.align;
-	var video_link = pl.src; 
-	
-	
-	// Avoid annoying warning about insecure items
-	if (!tinymce.isIE || document.location.protocol != 'https:' ){
-		if (video_link.search(/rtmp:\/\//) == -1){
-			h += '<object classid="' + cls + '" codebase="' + codebase + '" width="' + pl.width + '" height="' + pl.height + '" id="' + pl.id + '" name="' + pl.name + '" align="' + pl.align + '">';
-			for (n in pl) {
-				h += '<param name="' + n + '" value="' + pl[n] + '">';
-				
-				// Add extra url parameter if it's an absolute URL
-				if (n == 'src' && pl[n].indexOf('://') != -1) 
-					h += '<param name="url" value="' + pl[n] + '" />';
-			}
-		}
-	}
-	if (video_link.search(/rtmp:\/\//) != -1){
-		var cont = video_link.lastIndexOf("/"); 
-		var video = video_link.slice(cont+1);
-		var url = video_link.slice(0,cont);
-		//var conf ='config={"clip":{"url":"'+video.replace('.flv','')+'","provider":"influxis"},"plugins":{"influxis":{"url":"/player/flowplayer.rtmp-3.2.3.swf","netConnectionUrl":"'+url+'"}},"playerId":"'+ pl.id+'","playlist":[{"url":"'+video.replace('.flv','')+'","provider":"influxis"}]}}';
-		
-		//var conf = "clip:{url:'"+video.split('.flv') +"',provider:'influxis'},plugins:{influxis:{url:'/player/flowplayer.rtmp-3.2.3.swf',netConnectionUrl: '"+url+"'}}";
-		//var conf = "7B%22clip%22%3A%7B%22url%22%3A%22"+video.split('.flv')+"%22%2C%22provider%22%3A%22influxis%22%7D%2C%22plugins%22%3A%7B%22influxis%22%3A%7B%22url%22%3A%22/player/flowplayer.rtmp-3.2.3.swf%22%2C%22netConnectionUrl%22%3A%22"+url+"%22%7D%7D%2C%22playerId%22%3A%22fms%22%2C%22playlist%22%3A%5B%7B%22url%22%3A%22"+video.split('.flv')+"%22%2C%22provider%22%3A%22influxis%22%7D%5D%7D"
-		
-		//alert(conf)
-		/*	
-		var num = conf
-		var hex = '';
-		for (i=0;i<num.length;i++)
-			hex += "%" + num.charCodeAt(i).toString(16).toUpperCase();
-		conf = hex;*/
-		
-		
-		h +='<object width="' + pl.width + '" height="' + pl.height + '" id="' + pl.id + '" name="' + pl.name + '" align="' + pl.align + '" data="/player/player.swf ">';
-		h +='   <param name="allowfullscreen" value="true">';
-		h +='	<param name="allowscriptaccess" value="always">';
-		h +='	<param name="seamlesstabbing" value="true">';
-		h +='	<param name="wmode" value="opaque">';
-		h+='	<param name="flashvars" value="netstreambasepath='+url+'&amp;id='+video+'&amp;file='+video+'&amp;streamer='+url+'&amp;controlbar.position=bottom">';
-		
-		
-/*		h += '<param value="true" name="allowfullscreen">';
-		h += '<param value="always" name="allowscriptaccess">';
-		h += '<param value="high" name="quality">';
-		h += '<param value="#000000" name="bgcolor">';
-		h += '<param value="'+conf+'" name="flashvars" >';*/
 
-		
+	// Avoid annoying warning about insecure items
+	if (!tinymce.isIE || document.location.protocol != 'https:') {
+		h += '<object classid="' + cls + '" codebase="' + codebase + '" width="' + pl.width + '" height="' + pl.height + '" id="' + pl.id + '" name="' + pl.name + '" align="' + pl.align + '">';
+
+		for (n in pl) {
+			h += '<param name="' + n + '" value="' + pl[n] + '">';
+
+			// Add extra url parameter if it's an absolute URL
+			if (n == 'src' && pl[n].indexOf('://') != -1)
+				h += '<param name="url" value="' + pl[n] + '" />';
+		}
 	}
 
 	h += '<embed type="' + type + '" ';
