@@ -354,6 +354,8 @@ function TinyMCEConfig(id) {
         if (this.widget_config.autoresize) {
             plugins += ',autoresize';
         }
+		
+		
         return plugins;
     }
 }

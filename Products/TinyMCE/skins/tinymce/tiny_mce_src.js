@@ -8433,16 +8433,17 @@ tinymce.create('tinymce.ui.Toolbar:tinymce.ui.Container', {
 			}, s);
 
 			t.settings = s;
-
+			
 			// If page not loaded and strict mode isn't enabled then load them
 			if (!Event.domLoaded && !s.strict_loading_mode) {
+				
 				// Load language
 				if (s.language)
-					sl.add(tinymce.baseURL + '/langs/' + s.language + '.js');
-
+					sl.add(t.documentBaseURI.getURI() + '/langs/' + s.language + '.js');
+				
 				// Load theme
 				if (s.theme && s.theme.charAt(0) != '-' && !ThemeManager.urls[s.theme])
-					ThemeManager.load(s.theme, 'themes/' + s.theme + '/editor_template' + tinymce.suffix + '.js');
+					ThemeManager.load(s.theme, t.documentBaseURI.getURI() +  '/themes/' + s.theme + '/editor_template' + tinymce.suffix + '.js');
 
 				// Load plugins
 				if (s.plugins) {
@@ -8454,8 +8455,8 @@ tinymce.create('tinymce.ui.Toolbar:tinymce.ui.Container', {
 							// Skip safari plugin for other browsers
 							if (!tinymce.isWebKit && v == 'safari')
 								return;
-
-							PluginManager.load(v, 'plugins/' + v + '/editor_plugin' + tinymce.suffix + '.js');
+							
+							PluginManager.load(v, t.documentBaseURI.getURI() + '/plugins/' + v + '/editor_plugin' + tinymce.suffix + '.js');
 						}
 					});
 				}
@@ -8989,18 +8990,18 @@ var tinyMCE = window.tinyMCE = tinymce.EditorManager;
 			// Load scripts
 			function loadScripts() {
 				if (s.language)
-					sl.add(tinymce.baseURL + '/langs/' + s.language + '.js');
-
+					sl.add(t.documentBaseURI.getURI() + '/langs/' + s.language + '.js');
+				
 				if (s.theme && s.theme.charAt(0) != '-' && !ThemeManager.urls[s.theme])
-					ThemeManager.load(s.theme, 'themes/' + s.theme + '/editor_template' + tinymce.suffix + '.js');
+					ThemeManager.load(s.theme, t.documentBaseURI.getURI() + '/themes/' + s.theme + '/editor_template' + tinymce.suffix + '.js');
 
 				each(explode(s.plugins), function(p) {
 					if (p && p.charAt(0) != '-' && !PluginManager.urls[p]) {
 						// Skip safari plugin for other browsers
 						if (!isWebKit && p == 'safari')
 							return;
-
-						PluginManager.load(p, 'plugins/' + p + '/editor_plugin' + tinymce.suffix + '.js');
+						
+						PluginManager.load(p, t.documentBaseURI.getURI() + '/plugins/' + p + '/editor_plugin' + tinymce.suffix + '.js');
 					}
 				});
 
